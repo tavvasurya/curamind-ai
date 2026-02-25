@@ -1,0 +1,11 @@
+Django>=3.2,<6.0
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+python-dotenv
+celery
+torch
+torchvision
+Pillow
+matplotlib
+numpy

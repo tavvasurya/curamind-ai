@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Curamind AI | Medical Diagnosis Platform</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:#f4f7fb;}
+header{
+    background:#1e3c72;
+    color:white;
+    padding:20px;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+.main-container{
+    max-width:900px;
+    margin:40px auto;
+    padding:20px;
+}
+.card{
+    background:white;
+    padding:25px;
+    margin-bottom:30px;
+    border-radius:12px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
+h2{margin-bottom:20px;color:#1e3c72;}
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:15px;
+    border-radius:8px;
+    border:1px solid #d0d7e2;
+}
+button{
+    width:100%;
+    padding:12px;
+    background:#2a5298;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    transition:0.3s;
+}
+button:hover{background:#1e3c72;}
+.result-box{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#f9fbff;
+    border-radius:10px;
+    border-left:5px solid #2a5298;
+}
+.status-badge{
+    display:inline-block;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
+    margin-bottom:10px;
+    color:white;
+}
+.prediction-text{
+    font-size:16px;
+    font-weight:600;
+    margin-bottom:15px;
+}
+.heatmap-container img{
+    width:100%;
+    max-width:400px;
+    border-radius:10px;
+    border:2px solid #e1e6f0;
+}
+.message{margin-top:10px;font-size:14px;}
+.success{color:green;}
+.error{color:red;}
+</style>
+</head>
+
+<body>
+
+<header>
+CURAMIND AI — Intelligent Medical Diagnosis Platform
+</header>
+
+<div class="main-container">
+
+<!-- LOGIN -->
+<div class="card">
+<h2>Doctor Login</h2>
+<input type="text" id="username" placeholder="Username">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="loginMessage" class="message"></p>
+</div>
+
+<!-- UPLOAD -->
+<div class="card">
+<h2>Upload Medical Record</h2>
+<input type="number" id="patientId" placeholder="Patient ID">
+<input type="file" id="fileInput">
+<input type="text" id="diagnosis" placeholder="Diagnosis">
+<button onclick="uploadRecord()">Upload Record</button>
+<p id="uploadMessage" class="message"></p>
+</div>
+
+<!-- STATUS -->
+<div class="card">
+<h2>Check AI Status</h2>
+<input type="number" id="recordId" placeholder="Record ID">
+<button onclick="checkStatus()">Check Status</button>
+
+<div class="result-box" id="resultBox">
+<div class="status-badge" id="statusBadge"></div>
+<div class="prediction-text" id="predictionText"></div>
+
+<div class="heatmap-container">
+<h4>AI Heatmap Visualization</h4>
+<img id="heatmapImage" style="display:none;">
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+
+let accessToken = "";
+
+// LOGIN
+function login(){
+    fetch('/api/token/',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+            username:document.getElementById('username').value,
+            password:document.getElementById('password').value
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.access){
+            accessToken = data.access;
+            document.getElementById('loginMessage').innerHTML="Login Successful";
+            document.getElementById('loginMessage').className="message success";
+        }else{
+            document.getElementById('loginMessage').innerHTML="Login Failed";
+            document.getElementById('loginMessage').className="message error";
+        }
+    });
+}
+
+// UPLOAD
+function uploadRecord(){
+    if(!accessToken){
+        alert("Please login first!");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("patient", document.getElementById("patientId").value);
+    formData.append("file", document.getElementById("fileInput").files[0]);
+    formData.append("diagnosis", document.getElementById("diagnosis").value);
+
+    fetch('/api/records/upload/',{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+accessToken},
+        body:formData
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.id){
+            document.getElementById('uploadMessage').innerHTML="Upload Successful. Record ID: "+data.id;
+            document.getElementById('uploadMessage').className="message success";
+        }else{
+            document.getElementById('uploadMessage').innerHTML="Upload Failed";
+            document.getElementById('uploadMessage').className="message error";
+        }
+    });
+}
+
+// CHECK STATUS
+function checkStatus(){
+
+    if(!accessToken){
+        alert("Please login first!");
+        return;
+    }
+
+    const recordId=document.getElementById("recordId").value;
+
+    fetch(`/api/records/ai-status/${recordId}/`,{
+        headers:{'Authorization':'Bearer '+accessToken}
+    })
+    .then(res=>{
+        if(res.status===401){
+            alert("Unauthorized. Login again.");
+            return;
+        }
+        return res.json();
+    })
+    .then(data=>{
+        if(!data) return;
+
+        document.getElementById("resultBox").style.display="block";
+
+        if(data.ai_processed){
+            document.getElementById("statusBadge").innerText="AI Processed";
+            document.getElementById("statusBadge").style.background="#28a745";
+
+            document.getElementById("predictionText").innerText=
+                "Disease Prediction: "+(data.ai_prediction || "N/A");
+
+            if(data.heatmap_image){
+                document.getElementById("heatmapImage").src=data.heatmap_image;
+                document.getElementById("heatmapImage").style.display="block";
+            }
+
+        }else{
+            document.getElementById("statusBadge").innerText="Processing...";
+            document.getElementById("statusBadge").style.background="#ffc107";
+            document.getElementById("predictionText").innerText=
+                "AI is still processing. Please wait...";
+            document.getElementById("heatmapImage").style.display="none";
+        }
+    });
+}
+
+</script>
+
+</body>
+</html>

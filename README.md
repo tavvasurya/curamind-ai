@@ -269,10 +269,99 @@ numpy
 - Patient dashboard
 - Admin analytics panel
 
----
+📅 Week-4 Implementation – Dockerized Deployment & Scalable AI Processing
+🐳 Week-4 Overview
 
-# 🎓 Conclusion
+In Week-4, CuraMind AI was upgraded from a local development setup to a containerized, production-style architecture using Docker. The system now runs as multiple isolated services with asynchronous AI processing powered by Celery and Redis.
 
-CuraMind AI demonstrates a production-style healthcare SaaS architecture integrating secure authentication, medical data management, and AI-powered diagnostic capabilities with explainable visualization.
+This week focused on:
 
-This project represents a complete end-to-end healthcare AI system from authentication to AI prediction and frontend visualization.
+Containerization of Django backend
+
+Integration of Redis as message broker
+
+Running Celery worker inside Docker
+
+Service orchestration using Docker Compose
+
+Environment-based configuration
+
+Production-ready architecture design
+
+🏗 Dockerized System Architecture
+
+The application is structured into independent services:
+
+Service	Purpose
+web	Django backend application
+redis	Message broker for Celery
+celery	Background worker for AI tasks
+db	SQLite (development)
+
+🚀 Improvements Achieved in Week-4
+
+Fully containerized backend
+
+Asynchronous AI task execution
+
+Clean microservice-style architecture
+
+Redis-based message queue system
+
+Background worker scalability
+
+Environment-based configuration
+
+Production-ready setup
+
+🔐 Security & Scalability Enhancements
+
+Secure environment variables handling
+
+Decoupled services for better fault isolation
+
+Celery worker scaling capability
+
+Non-blocking AI processing
+
+Modular and deployment-ready structure
+
+📦 Technologies Used in Week-4
+
+Docker
+
+Docker Compose
+
+Redis
+
+Celery
+
+Django REST Framework
+
+PyTorch (AI Model)
+
+SQLite (Development DB)
+
+🎯 Outcome of Week-4
+
+By the end of Week-4, CuraMind AI evolved from a locally running backend system into a containerized, scalable healthcare SaaS platform capable of handling asynchronous AI diagnostics efficiently.
+
+The system now supports:
+
+Secure authentication
+
+Medical scan uploads
+
+Background AI processing
+
+Heatmap generation
+
+Docker-based deployment
+
+Service isolation and scalability
+
+
+🎓 Conclusion
+Week-4 successfully transformed CuraMind AI into a production-oriented architecture using Docker, Celery, and Redis. The implementation ensures scalability, maintainability, and efficient AI processing through asynchronous task execution.
+
+This milestone demonstrates the transition from a development-level healthcare backend to a structured, deployment-ready SaaS system built with modern DevOps practices.

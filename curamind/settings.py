@@ -4,6 +4,13 @@ Django settings for curamind project.
 
 from pathlib import Path
 from datetime import timedelta
+import os
+from dotenv import load_dotenv
+
+# -------------------------------------------------
+# Load Environment Variables
+# -------------------------------------------------
+load_dotenv()
 
 # -------------------------------------------------
 # Base Directory
@@ -14,9 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -------------------------------------------------
 # Security
 # -------------------------------------------------
-SECRET_KEY = 'django-insecure-change-this-key'
-DEBUG = True
-ALLOWED_HOSTS = []
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+DEBUG = os.getenv("DEBUG") == "True"
+
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")
 
 
 # -------------------------------------------------
@@ -63,7 +72,7 @@ ROOT_URLCONF = 'curamind.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], 
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,16 +89,17 @@ WSGI_APPLICATION = 'curamind.wsgi.application'
 
 
 # -------------------------------------------------
-# Database
+# Database (SQLite for now — PostgreSQL later)
+# -------------------------------------------------
+# -------------------------------------------------
+# Database (SQLite shared for Docker)
 # -------------------------------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db' / 'db.sqlite3',
     }
 }
-
-
 # -------------------------------------------------
 # Password Validation
 # -------------------------------------------------
@@ -117,7 +127,7 @@ STATIC_URL = '/static/'
 
 
 # -------------------------------------------------
-# Media Files (VERY IMPORTANT for file upload)
+# Media Files
 # -------------------------------------------------
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -155,10 +165,18 @@ SIMPLE_JWT = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# --------------------------------
-# Celery Configuration (Week 3)
-# --------------------------------
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+
+# -------------------------------------------------
+# Celery Configuration (Docker Compatible)
+# -------------------------------------------------
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL", "redis://redis:6379/0"
+)
+
+CELERY_RESULT_BACKEND = os.getenv(
+    "CELERY_RESULT_BACKEND", "redis://redis:6379/0"
+)
+
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+

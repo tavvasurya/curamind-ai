@@ -9,9 +9,6 @@ from .permissions import IsDoctor
 from .tasks import process_medical_record
 
 
-# ===============================
-# Medical Record Upload (Doctor Only)
-# ===============================
 class MedicalRecordCreateView(generics.CreateAPIView):
     queryset = MedicalRecord.objects.all()
     serializer_class = MedicalRecordSerializer
@@ -20,14 +17,9 @@ class MedicalRecordCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         record = serializer.save(doctor=self.request.user)
-
-        # 🔥 Trigger Celery AI Task
         process_medical_record.delay(record.id)
 
 
-# ===============================
-# Medical Record List (Role Based)
-# ===============================
 class MedicalRecordListView(generics.ListAPIView):
     serializer_class = MedicalRecordSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -44,9 +36,6 @@ class MedicalRecordListView(generics.ListAPIView):
         return MedicalRecord.objects.none()
 
 
-# ===============================
-# AI Status View
-# ===============================
 @api_view(['GET'])
 def ai_status_view(request, record_id):
     try:
@@ -57,13 +46,11 @@ def ai_status_view(request, record_id):
     return Response({
         "ai_processed": record.ai_processed,
         "ai_prediction": record.ai_prediction,
-        "heatmap_image": request.build_absolute_uri(record.heatmap_image.url) if record.heatmap_image else None
+        "heatmap_image": request.build_absolute_uri(record.heatmap_image.url)
+        if record.heatmap_image else None
     })
 
 
-# ===============================
-# Appointment Create
-# ===============================
 class AppointmentCreateView(generics.CreateAPIView):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
@@ -76,9 +63,6 @@ class AppointmentCreateView(generics.CreateAPIView):
             serializer.save(patient=self.request.user)
 
 
-# ===============================
-# Appointment List
-# ===============================
 class AppointmentListView(generics.ListAPIView):
     serializer_class = AppointmentSerializer
     permission_classes = [permissions.IsAuthenticated]
